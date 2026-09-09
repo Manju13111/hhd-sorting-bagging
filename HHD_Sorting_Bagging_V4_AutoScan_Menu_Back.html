@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hub System - Sorting & Bagging V2</title>
+<style>
+:root{
+  --blue:#2d52d6; --deep:#173a9e; --yellow:#ffd400; --text:#17345f;
+  --muted:#8b9cc2; --line:#d9e0ef; --bg:#f5f7fb; --green:#20a464;
+  --danger:#d94848; --warn:#d99000;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;font-family:Arial,Helvetica,sans-serif;background:#eef1f7;color:var(--text)}
+body{display:flex;align-items:center;justify-content:center}
+.app{width:min(100vw,556px);height:100%;max-width:556px;background:white;overflow:hidden;position:relative}
+@media(min-width:500px){.app{height:100vh;box-shadow:0 0 0 10px #172033;border-radius:28px}}
+@media(max-width:499px){.app{height:100vh;box-shadow:0 0 0 8px #172033;border-radius:22px}}
+.screen{height:100%;display:none;background:white}
+.screen.active{display:flex;flex-direction:column}
+.status{height:27px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-weight:700;font-size:12px}
+.dots{letter-spacing:1px}
+.top{height:59px;background:var(--blue);color:white;padding:0 18px;display:flex;align-items:center}
+.logoBox{width:30px;height:30px;border-radius:7px;background:var(--yellow);display:flex;align-items:center;justify-content:center;color:#163b9d;font-size:18px;font-weight:900;margin-right:8px}
+.logoText{font-size:18px;font-weight:800;font-style:italic}
+.loginBody{padding:22px 22px}
+h1{margin:0;text-align:center;font-size:19px;color:#102e58}
+.subtitle{text-align:center;color:#8b9cc2;font-size:10px;margin:4px 0 20px}
+label{display:block;font-size:11px;margin:0 0 5px;color:#395681}
+input,select{width:100%;height:38px;border:1px solid #dbe2f0;border-radius:6px;padding:0 11px;font-size:12px;outline:none;color:#405674;background:white}
+input:focus,select:focus{border-color:#7d96e8}
+.field{margin-bottom:16px}
+button{border:0;border-radius:7px;height:36px;font-size:13px;font-weight:700;cursor:pointer}
+.primary{background:var(--blue);color:#fff}.disabled{background:#b8c6ee;color:#fff}
+.loginBtn{width:100%;margin-top:14px}
+.header{height:64px;background:var(--blue);color:white;display:flex;align-items:center;padding:0 16px;flex:0 0 auto}
+.menuBtn{font-size:28px;width:45px;background:none;color:white;height:48px;padding:0}
+.headerTitle{font-size:21px;font-weight:700;flex:1}
+.user{font-size:13px}
+.content{padding:22px 24px;overflow:auto;flex:1;background:#fff}
+.card{border:1px solid var(--line);border-radius:14px;padding:18px;background:#fff;margin-bottom:16px}
+.hubTitle{font-size:24px;font-weight:700;margin:0 0 22px}
+.selectLabel{font-size:16px;margin-bottom:8px;color:#51698f}
+.selectFacility{height:52px;font-size:16px}
+.menuList{margin-top:18px;border-top:1px solid #edf0f6}
+.menuItem{height:52px;border-bottom:1px solid #edf0f6;display:flex;align-items:center;padding:0 12px;color:#6c7e9e;font-size:16px}
+.menuItem.active{background:#eaf0ff;color:#2851ce;font-weight:700;border-radius:6px}
+.icon{width:30px;text-align:center;margin-right:8px}
+.tabs{display:flex;border-bottom:1px solid var(--line);margin:0 -24px 24px}
+.tab{flex:1;text-align:center;padding:15px 5px;font-size:18px;color:#7182a1}
+.tab.active{color:var(--blue);font-weight:700;border-bottom:3px solid var(--blue)}
+.scanTitle{font-size:18px;color:#3b5b86;margin:0 0 9px}
+.scanInput{height:60px;font-size:20px}
+.confirm{width:100%;height:56px;margin-top:13px}
+.stationPill{display:flex;align-items:center;justify-content:space-between;border:1px solid #d9e2f3;border-radius:10px;padding:13px 15px;margin-bottom:25px;background:#f8faff}
+.change{color:var(--blue);font-weight:700}
+.success{border:1px solid #bfe7d0;background:#effbf4;border-radius:12px;padding:15px;margin-top:16px}
+.successTop{display:flex;align-items:center;gap:10px;color:#168451;font-weight:700}
+.check{width:28px;height:28px;border-radius:50%;background:#21a66a;color:#fff;display:flex;align-items:center;justify-content:center}
+.resultMain{font-size:22px;font-weight:800;margin:8px 0 2px}.resultRoute{color:#5f7294}.resultId{margin-top:8px;font-family:monospace}
+.ready{text-align:center;color:#1a8a56;margin-top:12px;font-size:14px}
+.drawer{position:absolute;inset:0;background:rgba(0,0,0,.35);display:none;z-index:20}
+.drawer.open{display:block}
+.drawerPanel{width:84%;height:100%;background:#fff;padding:18px;box-shadow:8px 0 20px rgba(0,0,0,.2)}
+.drawerHeader{font-size:22px;font-weight:800;color:var(--blue);margin:8px 0 20px}
+.drawerItem{padding:15px;border-bottom:1px solid #edf0f6;color:#50698f}.drawerItem.active{background:#eaf0ff;color:var(--blue);font-weight:700}
+.bagFull{display:flex;flex-direction:column;height:100%;background:#fff}
+.bagHero{background:linear-gradient(180deg,#2d52d6,#294cc6);color:#fff;padding:18px 20px 20px}
+.bagHeroLine{display:flex;align-items:center;justify-content:space-between}
+.bagHero h2{margin:0;font-size:23px}.newBtn{background:#fff;color:var(--blue);height:44px;padding:0 15px;font-size:14px}
+.bagSub{font-size:14px;opacity:.88;margin-top:5px}
+.bagBody{flex:1;overflow:auto;padding:18px 20px;background:#f7f9fd}
+.processCard{background:#fff;border:1px solid #dce3ef;border-radius:14px;padding:16px;margin-bottom:14px}
+.processTitle{font-size:18px;font-weight:700;margin-bottom:12px}
+.scanRow{display:flex;gap:10px}.scanRow input{height:58px;flex:1}.scanRow button{height:58px;width:100px;font-size:16px}.scanRow.singleScan input{width:100%;flex:1}
+.binReady{display:flex;align-items:center;justify-content:space-between;background:#eef3ff;border:1px solid #d6e0ff;padding:12px;border-radius:10px;margin-top:10px}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.metric{background:#fff;border:1px solid #dce3ef;border-radius:12px;padding:14px}.metric b{font-size:22px}.metric span{display:block;color:#7182a1;font-size:13px;margin-top:4px}
+.weightBar{height:10px;background:#e5e9f2;border-radius:10px;overflow:hidden;margin-top:12px}.weightFill{height:100%;background:#20a464;width:0%}
+.warning{display:none;background:#fff5dc;border:1px solid #f1d18a;color:#936400;padding:11px;border-radius:10px;margin-top:10px;font-size:14px}
+.warning.show{display:block}.danger{display:none;background:#fff0f0;border:1px solid #efb1b1;color:#ad3131;padding:11px;border-radius:10px;margin-top:10px}.danger.show{display:block}
+.shipments{margin-top:14px}.ship{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e0e5ee;padding:12px;border-radius:10px;margin-bottom:8px}.shipId{font-family:monospace;font-weight:700}.shipRoute{font-size:12px;color:#7587a5}.remove{height:38px;padding:0 10px;font-size:13px;background:#fff0f0;color:#b43c3c}
+.autoHint{font-size:12px;color:#7083a8;margin-top:7px}.closeBag{width:100%;height:60px;margin-top:14px}.closeBag:disabled{background:#b8c2d8;cursor:not-allowed}
+.empty{text-align:center;color:#8a99b5;padding:22px 5px}
+.toast{position:absolute;left:18px;right:18px;bottom:18px;background:#17345f;color:#fff;border-radius:10px;padding:13px;text-align:center;display:none;z-index:30}
+.toast.show{display:block}
+.startOverlay{position:absolute;inset:0;background:rgba(15,31,69,.55);display:flex;align-items:center;justify-content:center;z-index:25}
+.startModal{width:88%;background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.startModal h3{font-size:23px;margin:0 0 8px}.startModal p{color:#7182a1;line-height:1.45}.startModal button{width:100%;margin-top:12px}
+.hidden{display:none!important}
+
+@media(max-width:499px){
+  .loginBody h1{letter-spacing:-.2px}
+  .loginBody .field input{font-family:monospace}
+  .loginBody .loginBtn{font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <section id="login" class="screen active">
+    <div class="status"><span>9:41</span><span class="dots">•••</span></div>
+    <div class="top"><div class="logoBox">F</div><div class="logoText">Flipkart</div></div>
+    <div class="loginBody">
+      <h1>Welcome Back</h1>
+      <div class="subtitle">Login with your LDAP ID and password</div>
+      <div class="field"><label>Username</label><input id="loginUser" placeholder="Enter Username/LDAP ID" autocomplete="off"></div>
+      <div class="field"><label>Password</label><input id="loginPass" type="password" placeholder="Enter Password"></div>
+      <button id="loginBtn" class="loginBtn disabled" disabled>Log In</button>
+    </div>
+  </section>
+
+  <section id="hub" class="screen">
+    <div class="header"><button class="menuBtn" onclick="openDrawer()">☰</button><div class="headerTitle">Hub System</div></div>
+    <div class="content">
+      <div class="hubTitle">Operations</div>
+      <div class="selectLabel">Facility</div>
+      <select id="facility" class="selectFacility">
+        <option value="">Select facility...</option><option>Motherhub_BLR</option><option>Motherhub_ULB</option><option>Motherhub_HYD</option>
+      </select>
+      <div class="menuList">
+        <div class="menuItem"><span class="icon">⌖</span>Tracking</div>
+        <div class="menuItem"><span class="icon">▦</span>Grocery</div>
+        <div class="menuItem"><span class="icon">▣</span>Bagging</div>
+        <div class="menuItem"><span class="icon">◫</span>IRT Area</div>
+        <div class="menuItem active" onclick="showOps()"><span class="icon">SB</span>Sorting and Bagging</div>
+        <div class="menuItem"><span class="icon">⚙</span>Automation</div>
+        <div class="menuItem"><span class="icon">⇄</span>3PL Handover</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ops" class="screen">
+    <div class="header"><button class="menuBtn" onclick="openDrawer()">☰</button><div class="headerTitle" id="opsTitle">Sorting</div><div class="user" id="opsUser"></div></div>
+    <div class="content">
+      <div class="tabs"><div id="sortTab" class="tab active" onclick="showSorting()">Sorting</div><div id="bagTab" class="tab" onclick="showBagLanding()">Bagging</div></div>
+      <div id="sortingPanel">
+        <div id="stationStep">
+          <div class="scanTitle">Scan station (type a station number)</div>
+          <input id="stationInput" class="scanInput" placeholder="SCAN STATION" inputmode="numeric">
+          <button class="primary confirm" onclick="confirmStation()">Confirm station scan</button>
+        </div>
+        <div id="shipmentStep" class="hidden">
+          <div class="stationPill"><span>📍 <b id="stationName"></b></span><span class="change" onclick="resetStation()">Change</span></div>
+          <div class="scanTitle">Scan shipment (type any 5-digit number)</div>
+          <input id="shipmentInput" class="scanInput" placeholder="SCAN SHIPMENT" inputmode="numeric">
+          <button class="primary confirm" onclick="scanShipment()">Scan Shipment</button>
+          <div id="sortResult"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bag" class="screen">
+    <div class="bagFull">
+      <div class="status"><span>9:41</span><span class="dots">•••</span></div>
+      <div class="bagHero">
+        <div class="bagHeroLine"><div style="display:flex;align-items:center;gap:8px"><button class="menuBtn" style="width:38px;height:38px;padding:0" onclick="openDrawer()">☰</button><h2>Bagging</h2></div><button class="newBtn" onclick="startNewBag()">＋ Start New Process</button></div>
+        <div class="bagSub" id="bagFacility">Facility not selected</div>
+      </div>
+      <div class="bagBody">
+        <div id="bagProcess" class="hidden">
+          <div class="processCard">
+            <div class="processTitle">Scan Bin Barcode</div>
+            <div class="scanRow"><input id="binInput" placeholder="SCAN BIN" autocomplete="off"><button class="primary" onclick="confirmBin()">Scan</button></div>
+            <div id="binReady" class="binReady hidden"><span>📦 Bin ID: <b id="binId"></b></span><span>Ready</span></div>
+          </div>
+
+          <div id="shipmentBagCard" class="processCard hidden">
+            <div class="processTitle">Scan Shipment ID</div><div style="font-size:12px;color:#8b9cc2;margin:-6px 0 10px">Type or scan 5 digits — shipment adds automatically</div>
+            <div class="scanRow singleScan"><input id="bagShipmentInput" placeholder="Scan Shipment ID..." inputmode="numeric" autocomplete="off"></div>
+            <div class="metrics">
+              <div class="metric"><b id="countMetric">0</b><span>No. of shipments in bag</span></div>
+              <div class="metric"><b id="weightMetric">0.0 Kg</b><span>Total Bag Weight</span></div>
+            </div>
+            <div class="weightBar"><div id="weightFill" class="weightFill"></div></div>
+            <div id="warning" class="warning">⚠ Bag weight is above 25 Kg. Please check before closing.</div>
+            <div id="danger" class="danger">✕ Bag cannot exceed 30 Kg. Shipment not added.</div>
+            <div id="shipments" class="shipments"><div class="empty">No shipments scanned yet.</div></div>
+            <button id="closeBtn" class="closeBag primary" disabled onclick="closeBag()">CLOSE BAG</button>
+          </div>
+        </div>
+
+        <div id="bagEmpty" class="processCard">
+          <div class="processTitle">Bagging process</div>
+          <p style="color:#7182a1;line-height:1.5;margin:0">Click <b>Start New Process</b> to create a new bag, scan the bin barcode, and then scan shipments.</p>
+          <button class="primary closeBag" onclick="startNewBag()">START NEW PROCESS</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="drawer" class="drawer" onclick="closeDrawer(event)">
+    <div class="drawerPanel" onclick="event.stopPropagation()">
+      <div class="drawerHeader">Hub System</div>
+      <div class="drawerItem">Operations</div>
+      <div class="drawerItem" id="drawerFacility">Facility: Select facility...</div>
+      <div class="drawerItem">Tracking</div><div class="drawerItem">Grocery</div>
+      <div class="drawerItem" onclick="showBagLanding()">Bagging</div>
+      <div class="drawerItem">IRT Area</div>
+      <div class="drawerItem active" onclick="showOps()">Sorting and Bagging</div><div class="drawerItem" onclick="goBackToSorting()">↩ Back to Sorting</div>
+      <div class="drawerItem">Automation</div><div class="drawerItem">3PL Handover</div>
+      <div class="drawerItem" onclick="location.reload()">Logout</div>
+    </div>
+  </div>
+  <div id="startOverlay" class="startOverlay hidden">
+    <div class="startModal">
+      <h3>Start New Bagging Process</h3>
+      <p>A new bag will be created. Scan the bin barcode first, then scan each shipment.</p>
+      <button class="primary" onclick="beginBag()">START NEW PROCESS</button>
+      <button style="background:#eef1f7;color:#53698d" onclick="hideStart()">CANCEL</button>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+</div>
+
+<script>
+let station=0, bagWeight=0, shipments=[], bin="";
+const stations=[...Array(20)].map((_,i)=>i+1);
+const routes=["DEL/ARA","BLR/HYD","DEL/PAT","BLR/MAA"];
+const userEl=document.getElementById("opsUser");
+
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active")}
+function toast(t){let x=document.getElementById("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),1800)}
+function openDrawer(){document.getElementById("drawer").classList.add("open")}
+function closeDrawer(){document.getElementById("drawer").classList.remove("open")}
+function updateLogin(){let ok=document.getElementById("loginUser").value.trim() && document.getElementById("loginPass").value;let b=document.getElementById("loginBtn");b.disabled=!ok;b.className=ok?"loginBtn primary":"loginBtn disabled"}
+document.getElementById("loginUser").addEventListener("input",updateLogin);document.getElementById("loginPass").addEventListener("input",updateLogin);
+document.getElementById("loginBtn").onclick=()=>{userEl.textContent=document.getElementById("loginUser").value.trim();show("hub")};
+document.getElementById("facility").onchange=e=>{document.getElementById("drawerFacility").textContent="Facility: "+(e.target.value||"Select facility...")};
+function showOps(){closeDrawer();if(!document.getElementById("facility").value){toast("Please select a facility first.");return}show("ops");showSorting()}
+function goBackToSorting(){
+  closeDrawer();
+  if(!document.getElementById("facility").value){toast("Please select a facility first.");return}
+  show("ops");
+  showSorting();
+}
+function showSorting(){document.getElementById("opsTitle").textContent="Sorting";document.getElementById("sortTab").classList.add("active");document.getElementById("bagTab").classList.remove("active");document.getElementById("sortingPanel").classList.remove("hidden");document.getElementById("stationInput").focus()}
+function confirmStation(){
+ let n=parseInt(document.getElementById("stationInput").value,10);
+ if(!stations.includes(n)){toast("Enter station number 1 to 20");return}
+ station=n;document.getElementById("stationName").textContent="Station "+n;document.getElementById("stationStep").classList.add("hidden");document.getElementById("shipmentStep").classList.remove("hidden");document.getElementById("shipmentInput").focus();toast("Primary station session started.")
+}
+function resetStation(){station=0;document.getElementById("stationInput").value="";document.getElementById("shipmentStep").classList.add("hidden");document.getElementById("stationStep").classList.remove("hidden");document.getElementById("stationInput").focus()}
+function scanShipment(){
+ let id=document.getElementById("shipmentInput").value.trim();if(!/^\d{5}$/.test(id)){toast("Enter any 5-digit shipment number");return}
+ let ms="MStation"+(Math.floor(Math.random()*20)+1), route=routes[Math.floor(Math.random()*routes.length)];
+ document.getElementById("sortResult").innerHTML=`<div class="success"><div class="successTop"><span class="check">✓</span>Shipment successfully sorted</div><div class="resultMain">${ms}</div><div class="resultRoute">${route}</div><div class="resultId">${id}</div><div class="ready">📦 ready for next scan</div></div>`;
+ document.getElementById("shipmentInput").value="";document.getElementById("shipmentInput").focus()
+}
+function showBagLanding(){closeDrawer();if(!document.getElementById("facility").value){toast("Please select a facility first.");return}show("bag");document.getElementById("bagFacility").textContent=document.getElementById("facility").value;document.getElementById("bagEmpty").classList.remove("hidden");document.getElementById("bagProcess").classList.add("hidden")}
+function startNewBag(){document.getElementById("startOverlay").classList.remove("hidden")}
+function hideStart(){document.getElementById("startOverlay").classList.add("hidden")}
+function beginBag(){hideStart();bagWeight=0;shipments=[];bin="";document.getElementById("bagEmpty").classList.add("hidden");document.getElementById("bagProcess").classList.remove("hidden");document.getElementById("shipmentBagCard").classList.add("hidden");document.getElementById("binReady").classList.add("hidden");document.getElementById("binInput").value="";document.getElementById("binInput").focus();renderBag();toast("New bagging process started")}
+function confirmBin(){let v=document.getElementById("binInput").value.trim();if(!v){toast("Scan bin barcode");return}bin=v;document.getElementById("binId").textContent=v;document.getElementById("binReady").classList.remove("hidden");document.getElementById("shipmentBagCard").classList.remove("hidden");document.getElementById("bagShipmentInput").focus();toast("Bin scanned. Ready for shipment scanning.")}
+function addBagShipment(){
+ let id=document.getElementById("bagShipmentInput").value.trim();if(!id){toast("Scan Shipment ID");return}
+ let weight=Math.round((0.3+Math.random()*2.2)*10)/10;
+ if(bagWeight+weight>30){document.getElementById("danger").classList.add("show");document.getElementById("bagShipmentInput").value="";return}
+ shipments.push({id,weight});bagWeight=Math.round((bagWeight+weight)*10)/10;document.getElementById("danger").classList.remove("show");document.getElementById("bagShipmentInput").value="";renderBag();toast("Shipment successfully added to the unit");document.getElementById("bagShipmentInput").focus()
+}
+function renderBag(){
+ document.getElementById("countMetric").textContent=shipments.length;
+ document.getElementById("weightMetric").textContent=bagWeight.toFixed(1)+" Kg";
+ document.getElementById("weightFill").style.width=Math.min(100,(bagWeight/30)*100)+"%";
+ document.getElementById("warning").classList.toggle("show",bagWeight>=25&&bagWeight<=30);
+ document.getElementById("closeBtn").disabled=shipments.length===0;
+ let box=document.getElementById("shipments");
+ if(!shipments.length){box.innerHTML='<div class="empty">No shipments scanned yet.</div>';return}
+ box.innerHTML=shipments.map((s,i)=>`<div class="ship"><div><div class="shipId">${s.id}</div><div class="shipRoute">Shipment ${i+1} · ${s.weight.toFixed(1)} Kg</div></div><button class="remove" onclick="removeShipment(${i})">Remove</button></div>`).join("")
+}
+function removeShipment(i){bagWeight=Math.round((bagWeight-shipments[i].weight)*10)/10;shipments.splice(i,1);renderBag();toast("Shipment removed")}
+function closeBag(){if(!shipments.length)return;toast("Bag closed successfully");setTimeout(()=>showBagLanding(),600)}
+let stationTimer=null;
+let shipmentTimer=null;
+let bagShipmentTimer=null;
+
+document.getElementById("stationInput").addEventListener("input",()=>{
+  clearTimeout(stationTimer);
+  const v=document.getElementById("stationInput").value.trim();
+  if(/^([1-9]|1[0-9]|20)$/.test(v)){
+    stationTimer=setTimeout(()=>confirmStation(),120);
+  }
+});
+document.getElementById("stationInput").addEventListener("keydown",e=>{if(e.key==="Enter")confirmStation()});
+
+document.getElementById("shipmentInput").addEventListener("input",()=>{
+  clearTimeout(shipmentTimer);
+  const v=document.getElementById("shipmentInput").value.trim();
+  if(/^\d{5}$/.test(v)){
+    shipmentTimer=setTimeout(()=>scanShipment(),120);
+  }
+});
+document.getElementById("shipmentInput").addEventListener("keydown",e=>{if(e.key==="Enter")scanShipment()});
+
+document.getElementById("binInput").addEventListener("keydown",e=>{if(e.key==="Enter")confirmBin()});
+
+document.getElementById("bagShipmentInput").addEventListener("input",()=>{
+  clearTimeout(bagShipmentTimer);
+  const v=document.getElementById("bagShipmentInput").value.trim();
+  if(/^\d{5}$/.test(v)){
+    bagShipmentTimer=setTimeout(()=>addBagShipment(),120);
+  }
+});
+document.getElementById("bagShipmentInput").addEventListener("keydown",e=>{if(e.key==="Enter")addBagShipment()});
+</script>
+</body>
+</html>
